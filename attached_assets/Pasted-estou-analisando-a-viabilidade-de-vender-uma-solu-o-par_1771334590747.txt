@@ -1,0 +1,402 @@
+estou analisando a viabilidade de vender uma solução para o estado do Goias, que analise diferentes contratos de TI, de diferentes empresas, diferentes padrões de desenvolvimento, a principio pensei em uma solução que pegasse o o que foi desenvolvido naquele ciclo, analisasse e respondesse ao servidor publico resposavel pela aceitação dos pontos de função, como posso fazer isso?
+Sua ideia é viável e está bem alinhada com o que órgãos públicos (incluindo estados) vêm adotando em contratações de TI baseadas em pontos de função (APF). Para estruturar essa solução, vale pensar em dois eixos: um motor de análise do software/contrato e um fluxo de resposta para o servidor público responsável pela aceitação.
+
+1. Entender o modelo de contratação de TI no Goiás
+Antes de codar, vale validar se o estado adota:
+
+APF tradicional ou APF simplificado (SFP), conforme o roteiro de métricas do SISP, que já é usado como referência por vários entes públicos.
+​
+
+Outras métricas (como horas de serviço técnico) para contratos de TI.
+​
+
+Se o Goiás ou o órgão destino segue o padrão federal, o seu sistema pode ser desenhado em cima do SFP (mais simples e ágil) ou APF clássico, com documentação e critérios padronizados.
+
+2. Saída do ciclo de desenvolvimento: o que a solução deve analisar
+Você mencionou que a solução vai pegar “o que foi desenvolvido naquele ciclo”. Do ponto de vista de análise para pontos de função, o que importa, em geral, é:
+
+Documentação funcional (especificação de requisitos, stories, protótipos, documentos de usuário).
+
+Código fonte (se possível, para mapear CRUDs, interfaces, arquivos lógicos, etc.).
+
+Artefatos de entrega (relatórios de testes, evidências de homologação, artefatos de sustentação).
+​
+
+Seu sistema pode:
+
+Extrair automaticamente funcionalidades a partir de:
+
+Requisitos em texto (IA/NLP para identificar transações, entradas, saídas, arquivos lógicos internos e externos).
+
+Estrutura de código (endpoints de API, telas, entidades, bancos de dados).
+
+Validar essas funcionalidades contra o padrão de contagem de pontos de função (NESMA/IFPUG).
+
+3. Modelo da solução: como ligar análise ao servidor público
+Você quer transformar esse ciclo em um sistema que responde ao servidor responsável. Um modelo prático é:
+
+Passo 1 – Entrada do ciclo de entrega
+
+O gestor ou fornecedor carrega:
+
+Documentação (Word, PDF, Jira, etc.).
+
+Código fonte (repositório ou ZIP).
+
+Relatórios de entrega / testes.
+
+Passo 2 – Análise automática
+
+O sistema:
+
+Faz análise de texto (NLP) para extrair funcionalidades.
+
+Faz análise de código (AST, scanners de arquitetura) para identificar entidades, interfaces, endpoints, arquivos lógicos, etc.
+
+Gera:
+
+Tamanho funcional (APF/SFP) por ciclo.
+
+Relatório de discrepâncias (funcionalidades prometidas vs. entregues, diferenças de escopo, funções não contabilizadas).
+
+Passo 3 – Resposta ao servidor público
+Aqui é o “pulo do gato” para o uso público:
+
+O sistema gera um relatório de aceitação com:
+
+Número de pontos de função contados (justificado por item).
+
+Evidências de onde essas funções foram encontradas (trechos de documento, telas, endpoints).
+
+Apontamento de:
+
+Itens não entregues.
+
+Itens fora de escopo.
+
+Riscos de qualidade (ex.: falta de testes, inconsistência entre documentos e código).
+
+O servidor pode:
+
+Aceitar “apertando um botão” com base nesse relatório.
+
+Solicitar revisão ao fornecedor, com lista de itens pendentes.
+
+Gerar contra‑relatório (se sua solução for extensível a um sistema de gestão de contratos).
+
+4. Como você pode estruturar tecnicamente
+Para viabilizar essa solução, pense em:
+
+Motor de análise:
+
+NLP para análise de documentos: extrair funcionalidades, classificar em ALI, AIE, EE, SE, CE (seguindo o padrão de APF).
+
+Análise de código: ferramenta customizada (ou integrada a ferramentas como SonarQube, CodeScene, etc.) para mapear estruturas de dados e transações.
+
+Motor de pontos de função: tabela de regras e pesos (NESMA/IFPUG) para calcular o tamanho funcional.
+
+Interface para o servidor público:
+
+Dashboard simples com:
+
+Tamanho funcional entregue vs. contratado.
+
+Diferenciais por fornecedor (útil para comparar contratos de TI diferentes).
+
+Relatórios exportáveis (PDF/ODT) para anexar ao processo administrativo.
+
+Integração com processo de contratação:
+
+Se o estado usa SISP ou roteiro de métricas de software, o sistema pode exportar o resultado em formato compatível com o padrão de demonstrativo de pontos de função.
+
+5. To‑do list de alto nível para você avançar
+Para validar viabilidade e começar a prototipar, sugiro:
+
+Mapear o modelo de contratação de TI no Goiás (se usam APF/SFP, qual metodologia, quais órgãos).
+
+Definir um mínimo modelo de contrato (um exemplo de contrato de desenvolvimento de sistema com APF) para testar.
+
+Prototipar a análise de texto:
+
+Extrair requisitos de um documento.
+
+Classificar funcionalidades em componentes de ponto de função.
+
+Prototipar a análise de código:
+
+A partir de um repo simples, mapear entidades, endpoints e arquivos.
+
+Desenhar o relatório de aceitação em formato alinhado ao que o servidor público precisa (justificativa numérica + evidências).
+
+Se quiser, na próxima interação dá para desenhar um modelo de arquitetura (backend, frontend, IA) e um fluxo de usuário típico (servidor público, fornecedor, gestor de TI) para o estado de Goiás.
+
+a principio pensei que o input seria o contrato, edital, requisitos e repositorio, uma api de IA analisaria tudo com base no que treinamos ela antes e geraria o output com o relatorio. quero primeiro criar um prototipo somente para apresentar ao governo do Goias como proposta, me ajude a estrutura melhor essa ideia
+Excelente direção: usar contrato, edital, requisitos e repositório como input, alimentar uma API de IA treinada em APF / SISP, e gerar um relatório de aceitação para o servidor público é um conceito muito forte para o governo de Goiás, que já está alinhado ao uso de métricas de software e contrat exatamente por APF/SFP.
+
+Abaixo está uma forma estruturada de apresentar a ideia como protótipo/proposta, pensando em um pitch para o governo.
+
+1. Visão geral da solução (elevator pitch)
+Objetivo:
+Automatizar a análise de contratos de TI com base em pontos de função, para que o servidor público possa vistoriar, validar e assinar entregas com menos risco e mais objetividade, mesmo em cenários com múltiplos fornecedores e padrões diferentes.
+
+Nome provisório (para apresentação):
+
+Ex.: “Sistema de Análise de Pontos de Função (APF) com IA para Contratações de TI”
+
+Posição: ferramenta de apoio à comissão de contratação (CACTIC) / órgão gestor de TIC.
+​
+
+2. Pilares da solução
+Você pode dividir o pitch em 3 pilares:
+
+Pilar 1 – Entrada dos dados
+
+Documentos estruturados no processo:
+
+Contrato e edital (PDF, ODT, Word, processo eletrônico).
+
+Especificação de requisitos (stories, backlogs, documentos funcionais).
+​
+
+Repositório de código (GitHub, GitLab, Bitbucket, ZIP, etc.).
+
+Pilar 2 – Interpretador inteligente (IA + regras)
+
+Uma API de IA especializada treinada em:
+
+Roteiro de Métricas do SISP (v2.3 / 3.0) e Guia de Contagem de Pontos de Função.
+
+Regras de APF/SFP (funções de dados, transacionais, regras de contagem, peso, fator de impacto, etc.).
+
+A IA:
+
+Lê e interpreta o contrato, edital e requisitos.
+
+Relaciona o que foi contratado (escopo) com o que foi entregado (código).
+
+Detecta:
+
+Funcionalidades contratadas mas não entregues.
+
+Funcionalidades a mais.
+
+Pontos de função que não condizem com o padrão (ex: contagem inflada, inconsistência).
+
+Pilar 3 – Saída: relatório de análise para o servidor público
+
+Relatório de aceitação ou não aceitação da entrega, com:
+
+Tamanho funcional entregue (APF/SFP) x contratado.
+
+Indicadores de qualidade (testes, cobertura, consistência entre documento e código).
+
+Sugestão de motivação para o servidor público “aceitar” ou “solicitar complementação” com base em critérios objetivos.
+
+3. Arquitetura de alto nível (para o protótipo)
+Esboce algo simples, mas robusto suficiente para convencer:
+
+Frontend (protótipo)
+
+Interface web mínima onde o servidor público:
+
+Carrega contrato, edital, requisitos e repositório (link de Git ou ZIP).
+
+Visualiza:
+
+Tabela com pontos de função por funcionalidade.
+
+Discrepâncias (itens faltantes, extras, não‑contabilizados).
+
+Relatório pronto para download (PDF/ODT), alinhado ao modelo de demonstração do SISP.
+
+Backend
+
+API REST com:
+
+Rotas para upload de documentos e repositórios.
+
+Serviço de análise de texto (NLP) para:
+
+Identificar requisitos, funcionalidades, escopo.
+
+Mapear para ALI, AIE, EE, SE, CE do ponto de vista da APF.
+
+Serviço de análise de código:
+
+Mapear entidades, tabelas, endpoints, arquivos lógicos.
+
+Relacionar com o que foi descrito no documento.
+
+Motor de IA
+
+Modelo de linguagem (LLM) finetunado ou via RAG (Retrieval‑Augmented Generation) com:
+
+Conteúdo do Roteiro de Métricas do SISP e Guia de Contagem de Pontos de Função.
+
+Base de exemplos de contratos de TI e suas análises de APF.
+
+Saída: JSON estruturado com:
+
+Tamanho funcional.
+
+Lista de funcionalidades.
+
+Discrepâncias tópicas.
+
+Relatório automático
+
+Engine de relatórios (ex.: templates em Word ou PDF) que gera:
+
+Seção de “tamanho funcional”.
+
+Quadro comparativo: “O que foi contratado vs. o que foi entregue”.
+
+Parecer preliminar: “recomendado para aceitação” ou “solicitar revisão”, com justificativa numérica.
+
+4. Caso de uso de exemplo (para apresentar ao governo)
+Você pode preparar um exemplo concreto:
+
+Contrato: desenvolvimento de módulo de cadastro de servidores (front‑end + back‑end + integração com folha).
+
+Entradas:
+
+Edital + contrato (PDF).
+
+Requisitos funcionais (Word).
+
+Repositório com código (endpoint REST, tabelas, telas).
+
+O que o protótipo mostra:
+
+APF calculado: 120 pontos.
+
+Itens faltantes:
+
+Relatório de cadastro de servidores (não implementado).
+
+Integração com folha pendente.
+
+Relatório final:
+
+Aceitação parcial.
+
+Sugestão de pagamento parcial com base no tamanho funcional entregue coerente.
+
+Esse exemplo pode ser entregue como vídeo ou slide na apresentação.
+
+5. Posicionamento para o governo de Goiás
+Inclua em sua proposta:
+
+Alinhamento com normas:
+
+O uso de APF/SFP é recomendado pelo SISP e pelo Roteiro de Métricas de Software.
+
+O Goiás já tem normas de contratação de TIC e comissões de análise (CACTIC), o que torna a ferramenta um “apoio técnico racional”.
+​
+
+Benefícios:
+
+Redução de risco em contratos de TI com múltiplos fornecedores.
+
+Consistência na análise (mesmo padrão para todos os contratos).
+
+Ganho de produtividade do servidor público (menos horas de leitura manual, mais foco em decisão).
+
+Estratégia de protótipo:
+
+Começar por um piloto com:
+
+1‑3 contratos de TI atuais.
+
+Parceria com a CACTIC / SGG para validar o modelo de relatório.
+
+6. To‑do list para o protótipo (versão “pitch”)
+Para montar o protótipo de apresentação, você pode focar em:
+
+Definir o fluxo de tela (1–2 telas apenas):
+
+Upload de documentos + repositório.
+
+Visualização de relatório.
+
+Montar dados de exemplo:
+
+Contrato, edital e código de um sistema simples.
+
+Resultado em APF já calculado (manualmente) para comparar com o relatório gerado.
+
+Treinar ou simular a IA:
+
+Pelo menos uma API de LLM que “sabe” falar APF/SFP e consiga relacionar texto → requisitos → pontos de função.
+
+Preparar um slide deck:
+
+Problema atual (contratos de TI complexos, múltiplos fornecedores, risco de aceitação equivocada).
+
+Sua solução.
+
+Funcionamento em 3 passos.
+
+Caso de uso com Goiás.
+
+Se quiser, na próxima interação dá para montar um roteiro de pitch em português (slides a slides) e um modelo de relatório técnico em formato de proposta para o governo de Goiás.
+
+Essa ideia atende a esse projeto? segue o edital e o termo de referencia
+
+2 anexos
+Sim, sua solução de análise automatizada de contratos de TI com IA para pontos de função (APF/UST) atende perfeitamente ao edital CPSI nº 001/2026 da SEAD-GO, que busca uma solução inovadora para automatizar a fiscalização de contratos de TI mensurados por UST.
+
+O desafio do Anexo Único é exatamente resolver a "morosidade e ineficiência na fiscalização de contratos de TI mensurados por UST", com foco em análise de evidências, padronização e redução de subjetividade.
+​
+
+Alinhamento com o Desafio
+Sua ideia resolve diretamente os problemas identificados:
+
+Análise de evidências: Automatiza verificação de contrato, edital, requisitos e repositório, identificando inconsistências e aderências.
+​
+
+Padronização: Usa IA treinada em métricas SISP/APF para critérios objetivos por tipo de serviço.
+​
+
+Agilidade: Gera relatórios de aceitação rápida para fiscais, reduzindo tempo de análise.
+​
+
+Critério do Edital	Sua Solução	Pontuação Esperada (0-10)
+Potencial de resolução (35%)	Alta aderência ao desafio UST/SEAD	10 
+​
+Grau de desenvolvimento (30%)	Protótipo com TRL 5-7 (validação em ambiente relevante)	8-10 
+​
+Viabilidade/maturidade negócio (20%)	Seu expertise em AI + modelo escalável	9 
+​
+Viabilidade econômica (10%)	Dentro de R$800k, baixo custo op./manutenção	10 
+​
+Custo-benefício (5%)	Reduz fiscais/ tempo vs. manual	10 
+​
+Próximos Passos para Participar
+O prazo é curto (19/02 a 02/03/2026), mas viável para seu protótipo:
+
+Prepare proposta via formulário no hotsite (goias.gov.br/administracao/govtech): Inclua descrição da IA, pipeline (input → análise APF → relatório), integração (SEI/SIOFI), TRL atual.
+​
+
+Vídeo de 5min + protótipo: Demonstre análise de contrato real anonimizado → relatório APF.
+​
+
+Esboço Plano de Trabalho: Cronograma físico-financeiro (ex.: Mês 1: MVP; Mês 6: testes SEAD; até 12 meses TRL8), dentro R$800k.
+
+Demo Day: Apresente protótipo em 10min (híbrido). Top 3 vão para negociação.
+​
+
+Ajustes Sugeridos para Máxima Pontuação
+Inovação: Destaque ausência de soluções prontas no mercado (levantamento SEAD confirma).
+​
+
+Integração/Resiliência: Adapte para UST geral (não só APF), escalável a outros órgãos.
+​
+
+PI: Ofereça cessão código-fonte + licença perpétua gratuita à SEAD.
+​
+
+Riscos: Matriz preliminar inclui IA imprecisa → mitigação com validação fiscal.
+​
+
+Essa é a oportunidade ideal para sua startup: alinha com expertise AI, resolve dor real da SEAD e cabe no orçamento. Foque no protótipo para Demo Day!
