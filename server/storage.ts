@@ -1,38 +1,79 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  contracts,
+  contractFiles,
+  analyses,
+  type InsertContract,
+  type InsertContractFile,
+  type Contract,
+  type ContractFile,
+  type Analysis,
+} from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Contracts
+  getContracts(): Promise<Contract[]>;
+  getContract(id: number): Promise<Contract | undefined>;
+  createContract(contract: InsertContract): Promise<Contract>;
+  updateContractStatus(id: number, status: string): Promise<Contract>;
+
+  // Files
+  createContractFile(file: InsertContractFile): Promise<ContractFile>;
+  getContractFiles(contractId: number): Promise<ContractFile[]>;
+
+  // Analyses
+  createAnalysis(analysis: any): Promise<Analysis>;
+  getAnalyses(contractId: number): Promise<Analysis[]>;
+  getAnalysis(id: number): Promise<Analysis | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getContracts(): Promise<Contract[]> {
+    return await db.select().from(contracts).orderBy(desc(contracts.createdAt));
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getContract(id: number): Promise<Contract | undefined> {
+    const [contract] = await db.select().from(contracts).where(eq(contracts.id, id));
+    return contract;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createContract(insertContract: InsertContract): Promise<Contract> {
+    const [contract] = await db.insert(contracts).values(insertContract).returning();
+    return contract;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async updateContractStatus(id: number, status: string): Promise<Contract> {
+    const [contract] = await db
+      .update(contracts)
+      .set({ status })
+      .where(eq(contracts.id, id))
+      .returning();
+    return contract;
+  }
+
+  async createContractFile(file: InsertContractFile): Promise<ContractFile> {
+    const [contractFile] = await db.insert(contractFiles).values(file).returning();
+    return contractFile;
+  }
+
+  async getContractFiles(contractId: number): Promise<ContractFile[]> {
+    return await db.select().from(contractFiles).where(eq(contractFiles.contractId, contractId));
+  }
+
+  async createAnalysis(analysis: any): Promise<Analysis> {
+    const [newAnalysis] = await db.insert(analyses).values(analysis).returning();
+    return newAnalysis;
+  }
+
+  async getAnalyses(contractId: number): Promise<Analysis[]> {
+    return await db.select().from(analyses).where(eq(analyses.contractId, contractId)).orderBy(desc(analyses.createdAt));
+  }
+
+  async getAnalysis(id: number): Promise<Analysis | undefined> {
+    const [analysis] = await db.select().from(analyses).where(eq(analyses.id, id));
+    return analysis;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
