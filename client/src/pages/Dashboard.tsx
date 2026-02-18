@@ -1,6 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useContracts } from "@/hooks/use-contracts";
 import { useState } from "react";
+import { Link } from "wouter";
 
 // Mock UST data for the dashboard
 const mockUSTs = [
@@ -117,10 +118,12 @@ export default function Dashboard() {
             <span className="material-icons-outlined text-lg">file_download</span>
             Exportar PDF
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-pifc-primary hover:bg-pifc-primary-dark text-white rounded-lg shadow-sm hover:shadow transition text-sm font-medium">
-            <span className="material-icons-outlined text-lg">add</span>
-            Nova Fiscalização
-          </button>
+          <Link href="/nova-fiscalizacao">
+            <a className="flex items-center gap-2 px-4 py-2 bg-pifc-primary hover:bg-pifc-primary-dark text-white rounded-lg shadow-sm hover:shadow transition text-sm font-medium">
+              <span className="material-icons-outlined text-lg">add</span>
+              Nova Fiscalização
+            </a>
+          </Link>
         </div>
       </div>
 
