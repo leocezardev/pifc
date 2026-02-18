@@ -32,6 +32,11 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Debug log to ensure routes are registered
+  console.log("Registering API routes...");
+  console.log("  - GET /api/sessions");
+  console.log("  - POST /api/sessions");
+
   // === Contracts ===
 
   app.get(api.contracts.list.path, async (req, res) => {

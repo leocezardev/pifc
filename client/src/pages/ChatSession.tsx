@@ -303,7 +303,7 @@ export default function ChatSession() {
                         ))}
 
                         {/* Thinking indicator */}
-                        {isThinking && !localMessages.some(m => m.steps && (m.steps as any[]).some((s: any) => s.status === "loading")) && (
+                        {(isThinking && !hasLoadingSteps(localMessages)) ? (
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 rounded-full bg-pifc-primary/10 flex items-center justify-center shrink-0">
                                     <span className="material-symbols-outlined text-pifc-primary text-[16px]">smart_toy</span>
@@ -317,11 +317,11 @@ export default function ChatSession() {
                                     <span className="text-xs text-gray-400">Processando...</span>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
 
                         {/* Score Report Card */}
-                        {isCompleted && session?.scoreReport && (
-                            <ScoreReport score={session.score!} report={session.scoreReport as any} />
+                        {isCompleted && !!session?.scoreReport && (
+                            <ScoreReport score={session.score!} report={session.scoreReport as any} sessionId={session.id} />
                         )}
 
                         <div ref={chatEndRef} />
@@ -507,6 +507,13 @@ function AssistantMessage({ content, steps }: { content: string; steps: Processi
     );
 }
 
+function hasLoadingSteps(messages: ChatMessage[]): boolean {
+    return messages.some(m => {
+        if (!m.steps || !Array.isArray(m.steps)) return false;
+        return (m.steps as ProcessingStep[]).some(s => s.status === "loading");
+    });
+}
+
 function renderBold(text: string): React.ReactNode[] {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
@@ -517,7 +524,7 @@ function renderBold(text: string): React.ReactNode[] {
     });
 }
 
-function ScoreReport({ score, report }: { score: number; report: any }) {
+function ScoreReport({ score, report, sessionId }: { score: number; report: any; sessionId: number }) {
     const riskColors: Record<string, string> = {
         baixo: "text-emerald-600 bg-emerald-50 border-emerald-200",
         medio: "text-amber-600 bg-amber-50 border-amber-200",
@@ -637,6 +644,16 @@ function ScoreReport({ score, report }: { score: number; report: any }) {
                         </ul>
                     </div>
                 )}
+            </div>
+
+            {/* Action Footer */}
+            <div className="p-4 bg-gray-50 flex justify-end gap-2 border-t border-gray-100">
+                <Link href={`/chat/${sessionId}/report`}>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm">
+                        <span className="material-icons-outlined text-[18px]">print</span>
+                        Ver Relatório Completo (PDF)
+                    </button>
+                </Link>
             </div>
         </div>
     );

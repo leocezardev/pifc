@@ -9,6 +9,7 @@ import ContractsList from "@/pages/ContractsList";
 import ContractDetail from "@/pages/ContractDetail";
 import NovaFiscalizacao from "@/pages/NovaFiscalizacao";
 import ChatSession from "@/pages/ChatSession";
+import RelatorioPDF from "@/pages/RelatorioPDF";
 import PainelContrato from "@/pages/PainelContrato";
 import ContratosLista from "@/pages/ContratosLista";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/contracts/:id" component={ContractDetail} />
       <Route path="/nova-fiscalizacao" component={NovaFiscalizacao} />
       <Route path="/chat/:sessionId" component={ChatSession} />
+      <Route path="/chat/:sessionId/report" component={RelatorioPDF} />
       <Route path="/contratos" component={ContratosLista} />
       <Route path="/painel-contrato" component={PainelContrato} />
       <Route path="/settings" component={SettingsPage} />

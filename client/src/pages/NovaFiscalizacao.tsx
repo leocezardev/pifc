@@ -97,8 +97,8 @@ export default function NovaFiscalizacao() {
                 {/* Top Header Bar */}
                 <header className="flex items-center justify-between px-8 py-4 bg-transparent z-10 flex-shrink-0">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Link href="/">
-                            <a className="hover:text-pifc-primary transition-colors">PIFC 2.0</a>
+                        <Link href="/" className="hover:text-pifc-primary transition-colors">
+                            PIFC 2.0
                         </Link>
                         <span className="material-icons-outlined text-xs">chevron_right</span>
                         <span className="font-medium text-gray-800">
