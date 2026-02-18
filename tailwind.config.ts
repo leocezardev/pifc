@@ -6,12 +6,24 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        DEFAULT: "0.25rem",
+        lg: "0.5rem",
+        xl: "0.75rem",
+        full: "9999px",
       },
       colors: {
-        // Flat / base colors (regular buttons)
+        // PIFC Theme Colors
+        "pifc-primary": "#2b8cee",
+        "pifc-primary-dark": "#1a6bbd",
+        "bg-light": "#f6f7f8",
+        "bg-dark": "#101922",
+        "gov-blue": "#071D41",
+        "gov-yellow": "#FFCD07",
+        "ds-success": "#168821",
+        "ds-warning": "#FFCD07",
+        "ds-error": "#E60000",
+
+        // ShadCN token mapping
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
@@ -73,7 +85,7 @@ export default {
         "sidebar-accent": {
           DEFAULT: "hsl(var(--sidebar-accent) / <alpha-value>)",
           foreground: "hsl(var(--sidebar-accent-foreground) / <alpha-value>)",
-          border: "var(--sidebar-accent-border)"
+          border: "var(--sidebar-accent-border)",
         },
         status: {
           online: "rgb(34 197 94)",
@@ -83,6 +95,7 @@ export default {
         },
       },
       fontFamily: {
+        display: ["Public Sans", "sans-serif"],
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],

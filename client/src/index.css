@@ -1,14 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Outfit', sans-serif;
+  --font-sans: 'Public Sans', sans-serif;
+  --font-heading: 'Public Sans', sans-serif;
 
-  /* Corporate Government Palette - Trustworthy Blues & Grays */
+  /* PIFC Government Palette */
   --background: 210 20% 98%;
   --foreground: 222 47% 11%;
 
@@ -18,8 +16,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
-  /* Primary Blue - authoritative yet modern */
-  --primary: 221 83% 53%;
+  /* Primary Blue - PIFC brand */
+  --primary: 211 85% 55%;
   --primary-foreground: 210 40% 98%;
 
   --secondary: 210 40% 96.1%;
@@ -36,8 +34,8 @@
 
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 221 83% 53%;
-  
+  --ring: 211 85% 55%;
+
   --radius: 0.5rem;
 }
 
@@ -57,13 +55,30 @@
   .glass-panel {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
   }
-  
+
   .animate-enter {
     animation: enter 0.4s ease-out forwards;
   }
-  
+
   @keyframes enter {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+}
+
+/* Custom scrollbar for sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.05);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+/* DSGOV divider */
+.br-divider {
+  border-bottom: 1px solid #ccc;
 }
