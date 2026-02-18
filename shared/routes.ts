@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertContractSchema, contracts, analyses, contractFiles } from './schema';
+import { insertContractSchema, insertChatSessionSchema, contracts, analyses, contractFiles, chatSessions, chatMessages } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -71,6 +71,60 @@ export const api = {
       },
     }
   },
+  sessions: {
+    create: {
+      method: 'POST' as const,
+      path: '/api/sessions' as const,
+      input: insertChatSessionSchema,
+      responses: {
+        201: z.custom<typeof chatSessions.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/sessions/:id' as const,
+      responses: {
+        200: z.custom<typeof chatSessions.$inferSelect & { messages: typeof chatMessages.$inferSelect[] }>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    list: {
+      method: 'GET' as const,
+      path: '/api/sessions' as const,
+      responses: {
+        200: z.array(z.custom<typeof chatSessions.$inferSelect>()),
+      },
+    },
+    sendMessage: {
+      method: 'POST' as const,
+      path: '/api/sessions/:id/messages' as const,
+      input: z.object({
+        content: z.string(),
+      }),
+      responses: {
+        200: z.object({
+          userMessage: z.custom<typeof chatMessages.$inferSelect>(),
+          assistantMessage: z.custom<typeof chatMessages.$inferSelect>(),
+        }),
+        404: errorSchemas.notFound,
+        500: errorSchemas.internal,
+      },
+    },
+    generateScore: {
+      method: 'POST' as const,
+      path: '/api/sessions/:id/generate-score' as const,
+      responses: {
+        200: z.object({
+          score: z.number(),
+          report: z.any(),
+          message: z.custom<typeof chatMessages.$inferSelect>(),
+        }),
+        404: errorSchemas.notFound,
+        500: errorSchemas.internal,
+      },
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {
@@ -84,3 +138,4 @@ export function buildUrl(path: string, params?: Record<string, string | number>)
   }
   return url;
 }
+
