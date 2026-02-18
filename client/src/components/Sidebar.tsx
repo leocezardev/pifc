@@ -6,6 +6,7 @@ export function Sidebar() {
 
   const mainNavItems = [
     { icon: "dashboard", label: "Dashboard", href: "/" },
+    { icon: "assignment", label: "Contratos", href: "/painel-contrato" },
     { icon: "cloud_upload", label: "Ingestão", href: "/contracts" },
     { icon: "analytics", label: "Análise", href: "/analysis" },
   ];

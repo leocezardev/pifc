@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import ContractsList from "@/pages/ContractsList";
 import ContractDetail from "@/pages/ContractDetail";
 import NovaFiscalizacao from "@/pages/NovaFiscalizacao";
+import PainelContrato from "@/pages/PainelContrato";
 import { DashboardLayout } from "@/components/DashboardLayout";
 
 function SettingsPage() {
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/contracts" component={ContractsList} />
       <Route path="/contracts/:id" component={ContractDetail} />
       <Route path="/nova-fiscalizacao" component={NovaFiscalizacao} />
+      <Route path="/painel-contrato" component={PainelContrato} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
