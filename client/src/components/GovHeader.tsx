@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 
 export function GovHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -27,15 +28,15 @@ export function GovHeader() {
             {/* Main Header */}
             <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 sticky top-0 z-40 shadow-sm">
                 <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded bg-gradient-to-br from-pifc-primary to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                        P
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-bold text-gray-800 leading-tight">PIFC</h1>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                            Plataforma de Inteligência
-                        </p>
-                    </div>
+                    <Link href="/">
+                        <a className="cursor-pointer transition-opacity hover:opacity-80">
+                            <img
+                                src="/image.png"
+                                alt="PIFC - Plataforma de Inteligência de Fiscalização Contratual"
+                                className="h-10 w-auto object-contain"
+                            />
+                        </a>
+                    </Link>
                     <div className="h-8 w-px bg-gray-300 mx-4 hidden md:block"></div>
                     <span className="text-sm font-medium text-gray-600 hidden md:block">
                         Ministério da Gestão e Inovação

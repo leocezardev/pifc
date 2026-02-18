@@ -6,6 +6,7 @@ export function Sidebar() {
 
   const mainNavItems = [
     { icon: "dashboard", label: "Dashboard", href: "/" },
+    { icon: "chat_bubble", label: "Nova Fiscalização", href: "/nova-fiscalizacao" },
     { icon: "assignment", label: "Contratos", href: "/contratos" },
     { icon: "cloud_upload", label: "Ingestão", href: "/contracts" },
     { icon: "analytics", label: "Análise", href: "/analysis" },
@@ -21,19 +22,6 @@ export function Sidebar() {
       id="pifc-sidebar"
       className="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex shrink-0"
     >
-      {/* Logo PIFC - Link para Dashboard */}
-      <div className="p-5 border-b border-gray-100">
-        <Link href="/">
-          <a className="flex items-center gap-3 group cursor-pointer transition-opacity hover:opacity-80">
-            <img
-              src="/image.png"
-              alt="PIFC - Plataforma de Inteligência de Fiscalização Contratual"
-              className="h-10 w-auto object-contain"
-            />
-            <span className="text-xs font-normal text-gray-400 align-top">v2.0</span>
-          </a>
-        </Link>
-      </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
         <div className="mb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
