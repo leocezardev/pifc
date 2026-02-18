@@ -20,8 +20,11 @@ export default {
         "gov-blue": "#071D41",
         "gov-yellow": "#FFCD07",
         "ds-success": "#168821",
+        "ds-success-light": "#dffecd",
         "ds-warning": "#FFCD07",
+        "ds-alert-light": "#fff8d6",
         "ds-error": "#E60000",
+        "ds-error-light": "#fdd8d8",
 
         // ShadCN token mapping
         background: "hsl(var(--background) / <alpha-value>)",
