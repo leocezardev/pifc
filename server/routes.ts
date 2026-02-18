@@ -113,7 +113,7 @@ export async function registerRoutes(
     try {
       // Call OpenAI to simulate analysis
       const completion = await getOpenAI().chat.completions.create({
-        model: "gpt-5.1",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -179,7 +179,6 @@ async function seedDatabase() {
       contractDate: new Date("2025-01-15"),
       value: "150000.00",
       description: "Desenvolvimento do módulo de solicitação e aprovação de férias integrado ao ERP do estado.",
-      status: "draft",
     });
 
     await storage.createContract({
@@ -188,7 +187,6 @@ async function seedDatabase() {
       contractDate: new Date("2025-02-10"),
       value: "85000.50",
       description: "Modernização da interface e backend do portal de serviços ao cidadão.",
-      status: "completed",
     });
   }
 }

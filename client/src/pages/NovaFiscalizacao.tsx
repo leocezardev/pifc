@@ -1,56 +1,114 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { GovHeader } from "@/components/GovHeader";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { cn } from "@/lib/utils";
 
-// Mock recent sessions
-const recentSessions = [
+// Mock recent analysis sessions
+const recentAnalyses = [
     {
         id: 1,
-        title: "Contrato TI #458/2023",
-        time: "Há 2 horas",
-        dotColor: "bg-ds-success",
+        title: "Edital 04/2024 - Cloud",
+        icon: "description",
     },
     {
         id: 2,
-        title: "Revisão Cláusula 7 - Manutenção",
-        time: "Ontem",
-        dotColor: "bg-pifc-primary",
+        title: "Auditoria Repositório Frontend",
+        icon: "code",
     },
     {
         id: 3,
-        title: "Análise de Riscos Março/24",
-        time: "3 dias atrás",
-        dotColor: "bg-pifc-primary",
+        title: "Pontos de Função - Módulo RH",
+        icon: "analytics",
     },
 ];
 
-// Suggestion chips from AI
-const suggestions = [
-    "Quais documentos são obrigatórios?",
-    "Verificar cronograma",
+// Chat suggestion chips
+const chatSuggestions = [
+    { icon: "calculate", label: "Contar Pontos de Função" },
+    { icon: "fact_check", label: "Validar Requisitos" },
+    { icon: "scoreboard", label: "Gerar Score de Fornecedor" },
+    { icon: "palette", label: "Checklist Design System" },
 ];
+
+// Types for chat
+interface ChatStep {
+    label: string;
+    detail: string;
+    status: "done" | "loading" | "pending";
+    time?: string;
+}
+
+interface ChatMessage {
+    role: "user" | "assistant";
+    text: string;
+    steps?: ChatStep[];
+    stepsProgress?: string; // e.g., "3 de 5 passos"
+}
 
 export default function NovaFiscalizacao() {
     const [message, setMessage] = useState("");
-    const [chatMessages, setChatMessages] = useState<
-        { role: "user" | "assistant"; text: string }[]
-    >([]);
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [dragOver, setDragOver] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<"repo" | "upload">("repo");
+    const [showChat, setShowChat] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const chatEndRef = useRef<HTMLDivElement>(null);
+    const [location] = useLocation();
+
+    // Scroll to bottom when new messages arrive
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [chatMessages]);
 
     const handleSendMessage = () => {
         if (!message.trim()) return;
+        setShowChat(true);
+
+        // Simulate an AI response with processing steps
+        const userMsg = message;
         setChatMessages((prev) => [
             ...prev,
-            { role: "user", text: message },
-            {
-                role: "assistant",
-                text: `Entendido! Vou analisar sua solicitação sobre "${message}". Por favor, anexe os documentos do contrato para que eu possa iniciar a auditoria técnica.`,
-            },
+            { role: "user", text: userMsg },
         ]);
         setMessage("");
+
+        // Simulate assistant response with steps after a short delay
+        setTimeout(() => {
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    text: "",
+                    stepsProgress: "3 de 5 passos",
+                    steps: [
+                        {
+                            label: "Extração de texto do PDF 'Edital_Final.pdf'",
+                            detail: "Identificadas 14 cláusulas de segurança na seção 4.2",
+                            status: "done",
+                            time: "0.4s",
+                        },
+                        {
+                            label: "Consulta à Base de Conhecimento (DSGOV / LGPD)",
+                            detail: "Acessando API de normas vigentes...",
+                            status: "done",
+                            time: "1.2s",
+                        },
+                        {
+                            label: "Cruzamento de requisitos com Guia de Privacidade",
+                            detail: "Analisando conformidade...",
+                            status: "loading",
+                        },
+                        {
+                            label: "Gerar relatório de não-conformidades",
+                            detail: "",
+                            status: "pending",
+                        },
+                    ],
+                },
+            ]);
+        }, 800);
     };
 
     const handleFileDrop = (e: React.DragEvent) => {
@@ -74,332 +132,585 @@ export default function NovaFiscalizacao() {
         }
     };
 
+    const handleSuggestionClick = (suggestion: string) => {
+        setMessage(suggestion);
+    };
+
+    // Main navigation items matching the Stitch design
+    const mainNavItems = [
+        { icon: "chat_bubble", label: "Chat Fiscalização", href: "/nova-fiscalizacao", active: true },
+        { icon: "history", label: "Histórico de Contratos", href: "/contracts" },
+        { icon: "library_books", label: "Biblioteca SISP", href: "#" },
+    ];
+
+    // Management items matching main Sidebar
+    const managementNavItems = [
+        { icon: "dashboard", label: "Dashboard", href: "/" },
+        { icon: "description", label: "Relatórios", href: "/reports" },
+        { icon: "settings", label: "Configurações", href: "/settings" },
+    ];
+
     return (
         <div className="font-display bg-bg-light text-gray-800 antialiased min-h-screen flex flex-col">
             <GovHeader />
 
             <div className="flex flex-1 overflow-hidden">
-                {/* Left Sidebar - Analysis Sessions */}
-                <aside className="w-72 bg-white border-r border-gray-200 flex-col hidden lg:flex shrink-0">
-                    {/* New Analysis Button */}
-                    <div className="p-4">
-                        <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-pifc-primary hover:bg-pifc-primary-dark text-white rounded-xl shadow-sm hover:shadow transition-all text-sm font-semibold">
-                            <span className="material-icons-outlined text-lg">add</span>
-                            Nova Análise
-                        </button>
-                    </div>
-
-                    {/* Recent Sessions */}
-                    <div className="px-4 pt-2 pb-2">
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Sessões Recentes
-                        </h3>
-                    </div>
-                    <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-                        {recentSessions.map((session) => (
-                            <button
-                                key={session.id}
-                                className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors group"
-                            >
-                                <p className="text-sm font-medium text-gray-700 group-hover:text-pifc-primary transition-colors truncate">
-                                    {session.title}
-                                </p>
-                                <div className="flex items-center gap-1.5 mt-1">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${session.dotColor}`}></span>
-                                    <span className="text-xs text-gray-400">{session.time}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </nav>
-
-                    {/* Bottom Actions */}
-                    <div className="p-4 border-t border-gray-200 space-y-1">
-                        <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-pifc-primary transition-colors">
-                            <span className="material-icons-outlined text-[20px] text-gray-400">tune</span>
-                            Configurações Avançadas
-                        </button>
+                {/* Left Sidebar - Stitch Design Style */}
+                <aside
+                    id="pifc-sidebar-nova"
+                    className="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex shrink-0 h-full"
+                >
+                    {/* Logo PIFC - Link para Dashboard */}
+                    <div className="p-5 border-b border-gray-100">
                         <Link href="/">
-                            <a className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
-                                <span className="material-icons-outlined text-[20px]">logout</span>
-                                Sair do sistema
+                            <a className="flex items-center gap-3 group cursor-pointer transition-opacity hover:opacity-80">
+                                <img
+                                    src="/image.png"
+                                    alt="PIFC - Plataforma de Inteligência de Fiscalização Contratual"
+                                    className="h-10 w-auto object-contain"
+                                />
+                                <span className="text-xs font-normal text-gray-400 align-top">v2.0</span>
                             </a>
                         </Link>
+                    </div>
+
+                    {/* New Analysis Button */}
+                    <div className="px-4 py-4">
+                        <button className="w-full flex items-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-lg transition-all shadow-sm group">
+                            <span className="material-icons-outlined text-pifc-primary group-hover:scale-110 transition-transform">
+                                add_circle
+                            </span>
+                            <span className="font-medium text-sm">Nova Análise</span>
+                        </button>
+                    </div>
+
+                    {/* Main Navigation */}
+                    <nav className="flex-1 overflow-y-auto px-4 space-y-1">
+                        <div className="mb-2 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            Menu Principal
+                        </div>
+
+                        {mainNavItems.map((item) => {
+                            const isActive = item.active || location === item.href;
+                            return (
+                                <Link key={item.href + item.label} href={item.href}>
+                                    <a
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all group",
+                                            isActive
+                                                ? "bg-pifc-primary/10 text-pifc-primary"
+                                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                                        )}
+                                    >
+                                        <span
+                                            className={cn(
+                                                "material-icons-outlined text-[20px] transition-colors",
+                                                isActive ? "text-pifc-primary" : "text-gray-400 group-hover:text-pifc-primary"
+                                            )}
+                                        >
+                                            {item.icon}
+                                        </span>
+                                        {item.label}
+                                    </a>
+                                </Link>
+                            );
+                        })}
+
+                        {/* Análises Recentes */}
+                        <div className="mt-8 mb-2 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            Análises Recentes
+                        </div>
+
+                        {recentAnalyses.map((analysis) => (
+                            <a
+                                key={analysis.id}
+                                href="#"
+                                className="flex items-center gap-3 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors truncate"
+                            >
+                                <span className="material-icons-outlined text-[18px] text-gray-400">
+                                    {analysis.icon}
+                                </span>
+                                <span className="truncate">{analysis.title}</span>
+                            </a>
+                        ))}
+
+                        {/* Gestão section */}
+                        <div className="mt-8 mb-2 px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            Gestão
+                        </div>
+
+                        {managementNavItems.map((item) => {
+                            const isActive = location === item.href;
+                            return (
+                                <Link key={item.href} href={item.href}>
+                                    <a
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all group",
+                                            isActive
+                                                ? "bg-pifc-primary/10 text-pifc-primary"
+                                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                                        )}
+                                    >
+                                        <span
+                                            className={cn(
+                                                "material-icons-outlined text-[20px] transition-colors",
+                                                isActive ? "text-pifc-primary" : "text-gray-400 group-hover:text-pifc-primary"
+                                            )}
+                                        >
+                                            {item.icon}
+                                        </span>
+                                        {item.label}
+                                    </a>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    {/* User Profile Footer */}
+                    <div className="p-4 border-t border-gray-200 mt-auto">
+                        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-pifc-primary/20 flex items-center justify-center text-pifc-primary font-bold text-xs border-2 border-white shadow-sm">
+                                FT
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-medium text-gray-800 truncate">Fiscal TI Sênior</span>
+                                <span className="text-xs text-gray-400 truncate">Ministério da Gestão</span>
+                            </div>
+                            <span className="material-icons-outlined ml-auto text-gray-400 text-sm">settings</span>
+                        </div>
                     </div>
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto bg-bg-light flex flex-col">
-                    <div className="flex-1 p-6 lg:p-10 max-w-4xl mx-auto w-full">
-                        {/* Breadcrumb */}
-                        <div className="flex items-center gap-2 mb-6 animate-enter">
+                <main className="flex-1 overflow-hidden bg-gray-50/50 flex flex-col relative">
+                    {/* Top Header Bar */}
+                    <header className="flex items-center justify-between px-8 py-4 bg-transparent z-10 flex-shrink-0">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Link href="/">
-                                <a className="text-sm text-gray-500 hover:text-pifc-primary transition-colors">
-                                    Dashboard
-                                </a>
+                                <a className="hover:text-pifc-primary transition-colors">PIFC 2.0</a>
                             </Link>
-                            <span className="material-icons-outlined text-xs text-gray-400">
-                                chevron_right
-                            </span>
-                            <span className="text-sm text-pifc-primary font-medium">
-                                Nova Análise de Contrato
+                            <span className="material-icons-outlined text-xs">chevron_right</span>
+                            <span className="font-medium text-gray-800">
+                                {showChat ? "Novo Chat" : "Selecionar Fonte de Dados"}
                             </span>
                         </div>
-
-                        {/* Hero Title */}
-                        <div className="text-center mb-10 animate-enter" style={{ animationDelay: "50ms" }}>
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
-                                Olá! Como posso ajudar na fiscalização
-                                <br />
-                                do seu contrato hoje?
-                            </h1>
-                            <p className="text-base text-pifc-primary mt-4 max-w-xl mx-auto leading-relaxed">
-                                Inicie uma nova análise inteligente ou carregue seus documentos para começar a
-                                auditoria técnica.
-                            </p>
-                        </div>
-
-                        {/* AI Assistant Message */}
-                        <div
-                            className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-8 animate-enter"
-                            style={{ animationDelay: "100ms" }}
-                        >
-                            <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-full bg-pifc-primary/10 flex items-center justify-center shrink-0">
-                                    <span className="material-icons-outlined text-pifc-primary text-xl">
-                                        smart_toy
-                                    </span>
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm text-gray-700 leading-relaxed">
-                                        Estou pronto para analisar seus arquivos. Você pode me enviar o{" "}
-                                        <strong>Termo de Referência</strong>, a{" "}
-                                        <strong>Planilha de Custos</strong> ou integrar com o repositório de
-                                        desenvolvimento para verificar a entrega de artefatos.
-                                    </p>
-                                    <div className="flex flex-wrap gap-2 mt-4">
-                                        {suggestions.map((suggestion) => (
-                                            <button
-                                                key={suggestion}
-                                                onClick={() => setMessage(suggestion)}
-                                                className="px-4 py-2 text-sm font-medium text-pifc-primary bg-pifc-primary/5 border border-pifc-primary/20 rounded-full hover:bg-pifc-primary/10 transition-colors"
-                                            >
-                                                {suggestion}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                        <div className="flex items-center gap-4">
+                            <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative">
+                                <span className="material-icons-outlined">notifications</span>
+                                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-gray-50"></span>
+                            </button>
+                            <div className="flex items-center gap-1 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-sm font-medium shadow-sm">
+                                <span className="material-icons-outlined text-yellow-500 text-sm">bolt</span>
+                                <span className="text-gray-800">300 créditos</span>
                             </div>
                         </div>
+                    </header>
 
-                        {/* Chat messages */}
-                        {chatMessages.length > 0 && (
-                            <div className="space-y-4 mb-8 animate-enter">
-                                {chatMessages.map((msg, i) => (
-                                    <div
-                                        key={i}
-                                        className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""
-                                            }`}
-                                    >
-                                        <div
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user"
-                                                    ? "bg-pifc-primary text-white"
-                                                    : "bg-pifc-primary/10 text-pifc-primary"
-                                                }`}
-                                        >
-                                            <span className="material-icons-outlined text-base">
-                                                {msg.role === "user" ? "person" : "smart_toy"}
-                                            </span>
-                                        </div>
-                                        <div
-                                            className={`max-w-[80%] rounded-xl p-4 text-sm leading-relaxed ${msg.role === "user"
-                                                    ? "bg-pifc-primary text-white rounded-tr-sm"
-                                                    : "bg-white border border-gray-200 text-gray-700 shadow-sm rounded-tl-sm"
-                                                }`}
-                                        >
-                                            {msg.text}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Integration Cards Grid */}
-                        <div
-                            className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-enter"
-                            style={{ animationDelay: "150ms" }}
-                        >
-                            {/* Repository Integration Card */}
-                            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:border-pifc-primary/30 transition-all hover:shadow-md group">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-pifc-primary/10 rounded-lg">
-                                        <span className="material-icons-outlined text-pifc-primary text-2xl">
-                                            sync_alt
-                                        </span>
-                                    </div>
-                                    <h3 className="text-lg font-bold text-gray-800">Integração de Repositório</h3>
-                                </div>
-                                <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-                                    Conecte o PIFC diretamente ao controle de versão para auditoria automática de
-                                    código e deploys.
+                    {/* Scrollable Content Area */}
+                    <div className="flex-1 overflow-y-auto px-4 sm:px-8 pb-48 flex flex-col items-center">
+                        <div className="w-full max-w-4xl">
+                            {/* Hero Title */}
+                            <div className="text-center mb-10 animate-enter">
+                                <h1 className="text-3xl font-bold text-gray-800 mb-3 tracking-tight">
+                                    {showChat
+                                        ? "Como posso auxiliar na fiscalização hoje?"
+                                        : "O que você deseja analisar hoje?"}
+                                </h1>
+                                <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                                    {showChat
+                                        ? "Seu assistente especializado em normas do SISP e análise técnica contratual."
+                                        : "Selecione a fonte dos artefatos ou conecte um repositório para iniciar a auditoria com o Agente de Fiscalização."}
                                 </p>
-
-                                {/* Repo icons */}
-                                <div className="flex gap-3">
-                                    {[
-                                        { name: "GITHUB", icon: "code", color: "text-gray-800" },
-                                        { name: "GITLAB", icon: "merge_type", color: "text-orange-500" },
-                                        { name: "JIRA", icon: "assignment", color: "text-blue-600" },
-                                    ].map((repo) => (
-                                        <button
-                                            key={repo.name}
-                                            onClick={() =>
-                                                setSelectedRepo(selectedRepo === repo.name ? null : repo.name)
-                                            }
-                                            className={`flex flex-col items-center gap-1.5 px-5 py-3 rounded-lg border transition-all ${selectedRepo === repo.name
-                                                    ? "border-pifc-primary bg-pifc-primary/5 shadow-sm"
-                                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                                }`}
-                                        >
-                                            <span
-                                                className={`material-icons-outlined text-2xl ${selectedRepo === repo.name ? "text-pifc-primary" : repo.color
-                                                    }`}
-                                            >
-                                                {repo.icon}
-                                            </span>
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                                                {repo.name}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
                             </div>
 
-                            {/* File Upload Card */}
-                            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:border-pifc-primary/30 transition-all hover:shadow-md">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-pifc-primary/10 rounded-lg">
-                                        <span className="material-icons-outlined text-pifc-primary text-2xl">
-                                            cloud_upload
-                                        </span>
-                                    </div>
-                                    <h3 className="text-lg font-bold text-gray-800">Importação de Arquivos</h3>
+                            {/* Tabbed Card - Stitch Style (Integração de Repositório / Importação de Arquivos) */}
+                            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden w-full mx-auto max-w-3xl animate-enter" style={{ animationDelay: "100ms" }}>
+                                {/* Tabs */}
+                                <div className="flex border-b border-gray-200 bg-gray-50/50">
+                                    <button
+                                        onClick={() => setActiveTab("repo")}
+                                        className={cn(
+                                            "flex-1 py-4 text-sm font-semibold text-center transition-colors flex items-center justify-center gap-2",
+                                            activeTab === "repo"
+                                                ? "border-b-2 border-pifc-primary text-pifc-primary"
+                                                : "border-b border-transparent text-gray-500 hover:text-gray-700 hover:bg-white"
+                                        )}
+                                    >
+                                        <span className="material-icons-outlined text-lg">deployed_code</span>
+                                        Integração de Repositório
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab("upload")}
+                                        className={cn(
+                                            "flex-1 py-4 text-sm font-medium text-center transition-colors flex items-center justify-center gap-2",
+                                            activeTab === "upload"
+                                                ? "border-b-2 border-pifc-primary text-pifc-primary"
+                                                : "border-b border-transparent text-gray-500 hover:text-gray-700 hover:bg-white"
+                                        )}
+                                    >
+                                        <span className="material-icons-outlined text-lg">upload_file</span>
+                                        Importação de Arquivos
+                                    </button>
                                 </div>
 
-                                {/* Drop zone */}
-                                <div
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        setDragOver(true);
-                                    }}
-                                    onDragLeave={() => setDragOver(false)}
-                                    onDrop={handleFileDrop}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragOver
-                                            ? "border-pifc-primary bg-pifc-primary/5"
-                                            : "border-gray-300 hover:border-pifc-primary/50 hover:bg-gray-50"
-                                        }`}
-                                >
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        multiple
-                                        accept=".zip,.pdf,.png,.txt,.md"
-                                        className="hidden"
-                                        onChange={handleFileSelect}
-                                    />
-                                    <span className="material-icons-outlined text-3xl text-gray-400 mb-2 block">
-                                        cloud_upload
-                                    </span>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Clique ou arraste arquivos aqui
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-wide">
-                                        ZIP, PDF, PNG, TXT, MD (MAX 50MB)
-                                    </p>
-                                </div>
-
-                                {/* Uploaded files list */}
-                                {uploadedFiles.length > 0 && (
-                                    <div className="mt-3 space-y-2">
-                                        {uploadedFiles.map((file, i) => (
-                                            <div
-                                                key={i}
-                                                className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg text-sm"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <span className="material-icons-outlined text-pifc-primary text-base">
-                                                        description
-                                                    </span>
-                                                    <span className="text-gray-700 font-medium truncate max-w-[180px]">
-                                                        {file.name}
-                                                    </span>
+                                {/* Tab Content */}
+                                <div className="p-8">
+                                    {activeTab === "repo" ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                                            {/* Left Column - Info */}
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Conecte sua fonte de código</h3>
+                                                    <p className="text-sm text-gray-500 leading-relaxed">
+                                                        Vincule repositórios Git ou projetos de gestão para que a IA analise commits, pull requests e tickets em tempo real. Ideal para auditoria contínua de contratos de software.
+                                                    </p>
                                                 </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Provedores Suportados</label>
+                                                    <div className="flex gap-4">
+                                                        {[
+                                                            { name: "GitHub", icon: "code", color: "text-gray-800" },
+                                                            { name: "GitLab", icon: "merge_type", color: "text-orange-500" },
+                                                            { name: "Jira", icon: "assignment", color: "text-blue-600" },
+                                                        ].map((repo) => (
+                                                            <button
+                                                                key={repo.name}
+                                                                onClick={() =>
+                                                                    setSelectedRepo(selectedRepo === repo.name ? null : repo.name)
+                                                                }
+                                                                className={cn(
+                                                                    "flex flex-col items-center justify-center w-20 h-20 rounded-lg border transition-all group bg-gray-50",
+                                                                    selectedRepo === repo.name
+                                                                        ? "border-pifc-primary bg-blue-50 shadow-sm"
+                                                                        : "border-gray-200 hover:border-pifc-primary hover:bg-blue-50/50"
+                                                                )}
+                                                            >
+                                                                <span
+                                                                    className={cn(
+                                                                        "material-icons-outlined text-2xl mb-1 opacity-80 group-hover:opacity-100 transition-opacity",
+                                                                        selectedRepo === repo.name ? "text-pifc-primary" : repo.color
+                                                                    )}
+                                                                >
+                                                                    {repo.icon}
+                                                                </span>
+                                                                <span className="text-[10px] font-medium text-gray-700">{repo.name}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Right Column - URL Input */}
+                                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 h-full flex flex-col">
+                                                <label className="block text-sm font-medium text-gray-800 mb-2">URL do Repositório</label>
+                                                <div className="relative mb-4">
+                                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                                        <span className="material-icons-outlined text-lg">link</span>
+                                                    </span>
+                                                    <input
+                                                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-pifc-primary focus:border-pifc-primary outline-none transition-all placeholder-gray-400 text-gray-800"
+                                                        placeholder="https://github.com/organizacao/projeto..."
+                                                        type="text"
+                                                    />
+                                                </div>
+                                                <div className="mt-auto pt-4 border-t border-gray-200/50 flex justify-end">
+                                                    <button className="px-5 py-2.5 bg-pifc-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                                                        <span>Conectar e Analisar</span>
+                                                        <span className="material-icons-outlined text-sm">arrow_forward</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Upload Tab Content */
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Importe seus documentos</h3>
+                                                <p className="text-sm text-gray-500 leading-relaxed">
+                                                    Carregue Termos de Referência, Planilhas de Custos, relatórios ou qualquer documento relevante para a fiscalização.
+                                                </p>
+                                            </div>
+
+                                            {/* Drop zone */}
+                                            <div
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    setDragOver(true);
+                                                }}
+                                                onDragLeave={() => setDragOver(false)}
+                                                onDrop={handleFileDrop}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className={cn(
+                                                    "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
+                                                    dragOver
+                                                        ? "border-pifc-primary bg-pifc-primary/5"
+                                                        : "border-gray-300 hover:border-pifc-primary/50 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    multiple
+                                                    accept=".zip,.pdf,.png,.txt,.md"
+                                                    className="hidden"
+                                                    onChange={handleFileSelect}
+                                                />
+                                                <span className="material-icons-outlined text-4xl text-gray-400 mb-3 block">
+                                                    cloud_upload
+                                                </span>
+                                                <p className="text-sm font-medium text-gray-600">
+                                                    Clique ou arraste arquivos aqui
+                                                </p>
+                                                <p className="text-xs text-gray-400 mt-1 uppercase tracking-wide">
+                                                    ZIP, PDF, PNG, TXT, MD (MAX 50MB)
+                                                </p>
+                                            </div>
+
+                                            {/* Uploaded files list */}
+                                            {uploadedFiles.length > 0 && (
+                                                <div className="space-y-2">
+                                                    {uploadedFiles.map((file, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="material-icons-outlined text-pifc-primary text-base">
+                                                                    description
+                                                                </span>
+                                                                <span className="text-gray-700 font-medium truncate max-w-[250px]">
+                                                                    {file.name}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() =>
+                                                                    setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))
+                                                                }
+                                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <span className="material-icons-outlined text-base">close</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Upload button */}
+                                            <div className="flex justify-end">
                                                 <button
-                                                    onClick={() =>
-                                                        setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))
-                                                    }
-                                                    className="text-gray-400 hover:text-ds-error transition-colors"
+                                                    disabled={uploadedFiles.length === 0}
+                                                    className="px-5 py-2.5 bg-pifc-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                                                 >
-                                                    <span className="material-icons-outlined text-base">close</span>
+                                                    <span>Analisar Documentos</span>
+                                                    <span className="material-icons-outlined text-sm">arrow_forward</span>
                                                 </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
 
-                                {/* Security badge */}
-                                <div className="flex items-center gap-2 mt-4 justify-center">
-                                    <span className="w-2 h-2 rounded-full bg-ds-success"></span>
-                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Segurança de Dados Garantida
-                                    </span>
+                                            {/* Security badge */}
+                                            <div className="flex items-center gap-2 justify-center pt-2">
+                                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                    Segurança de Dados Garantida
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+
+                            {/* ===== CHAT SECTION - Below the tabs ===== */}
+                            <div className="mt-8 w-full max-w-3xl mx-auto animate-enter" style={{ animationDelay: "150ms" }}>
+                                {/* Chat Messages Area */}
+                                {chatMessages.length > 0 && (
+                                    <div className="space-y-6 mb-6">
+                                        {chatMessages.map((msg, i) => (
+                                            <div key={i}>
+                                                {msg.role === "user" ? (
+                                                    /* User Message */
+                                                    <div className="flex justify-end">
+                                                        <div className="bg-gray-100 text-gray-800 px-5 py-3 rounded-2xl rounded-br-none max-w-2xl shadow-sm border border-gray-200">
+                                                            <p className="text-sm leading-relaxed">{msg.text}</p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    /* Assistant Message with Steps */
+                                                    <div className="flex gap-4 items-start w-full">
+                                                        <div className="w-8 h-8 rounded-full bg-pifc-primary flex items-center justify-center text-white flex-shrink-0 mt-1 shadow-md">
+                                                            <span className="material-icons-outlined text-sm">smart_toy</span>
+                                                        </div>
+                                                        <div className="flex-1 space-y-3 min-w-0">
+                                                            {/* Agent header */}
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="font-bold text-sm text-gray-800">Agente de Fiscalização</span>
+                                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-200 text-gray-500">LITE</span>
+                                                            </div>
+
+                                                            {/* Text response */}
+                                                            {msg.text && (
+                                                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                                                                    <p className="text-sm text-gray-700 leading-relaxed">{msg.text}</p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Processing Steps Card */}
+                                                            {msg.steps && msg.steps.length > 0 && (
+                                                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                                                    {/* Steps header */}
+                                                                    <div className="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors">
+                                                                        <span className="text-sm font-medium text-gray-500">Processando solicitação...</span>
+                                                                        {msg.stepsProgress && (
+                                                                            <span className="text-xs text-gray-400">{msg.stepsProgress}</span>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Steps list */}
+                                                                    <div className="divide-y divide-gray-100">
+                                                                        {msg.steps.map((step, si) => (
+                                                                            <div
+                                                                                key={si}
+                                                                                className={cn(
+                                                                                    "p-3 flex items-start gap-3",
+                                                                                    step.status === "done" && "bg-green-50/50",
+                                                                                    step.status === "loading" && "bg-pifc-primary/5",
+                                                                                    step.status === "pending" && "opacity-50"
+                                                                                )}
+                                                                            >
+                                                                                {/* Step icon */}
+                                                                                {step.status === "done" && (
+                                                                                    <span className="material-icons-outlined text-green-600 text-lg mt-0.5">check_circle</span>
+                                                                                )}
+                                                                                {step.status === "loading" && (
+                                                                                    <span className="material-icons-outlined text-pifc-primary text-lg mt-0.5 animate-spin">progress_activity</span>
+                                                                                )}
+                                                                                {step.status === "pending" && (
+                                                                                    <span className="material-icons-outlined text-gray-400 text-lg mt-0.5">radio_button_unchecked</span>
+                                                                                )}
+
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <p className={cn(
+                                                                                        "text-sm",
+                                                                                        step.status === "pending" ? "text-gray-600" : "text-gray-800 font-medium"
+                                                                                    )}>
+                                                                                        {step.label}
+                                                                                    </p>
+                                                                                    {step.detail && (
+                                                                                        <p className="text-xs text-gray-400 mt-0.5">{step.detail}</p>
+                                                                                    )}
+                                                                                </div>
+
+                                                                                {step.time && (
+                                                                                    <span className="text-xs text-gray-400 font-mono flex-shrink-0">{step.time}</span>
+                                                                                )}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        <div ref={chatEndRef} />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Quick Templates - shown only when no chat */}
+                            {chatMessages.length === 0 && (
+                                <div className="mt-12 text-center flex flex-col items-center animate-enter" style={{ animationDelay: "200ms" }}>
+                                    <p className="text-sm text-gray-500 mb-4">Ou comece com um modelo padrão</p>
+                                    <div className="flex flex-wrap justify-center gap-3">
+                                        <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-gray-200 rounded-full text-xs font-medium text-gray-500 hover:border-pifc-primary hover:text-pifc-primary transition-colors">
+                                            <span className="material-icons-outlined text-[16px]">description</span>
+                                            Edital de Fábrica de Software
+                                        </button>
+                                        <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-gray-200 rounded-full text-xs font-medium text-gray-500 hover:border-pifc-primary hover:text-pifc-primary transition-colors">
+                                            <span className="material-icons-outlined text-[16px]">security</span>
+                                            Relatório de Vulnerabilidade
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Chat Input - Fixed at bottom */}
-                    <div className="border-t border-gray-200 bg-white p-4 lg:px-10">
-                        <div className="max-w-4xl mx-auto">
-                            <div className="flex items-end gap-3">
-                                <div className="flex-1 relative">
-                                    <textarea
-                                        value={message}
-                                        onChange={(e) => setMessage(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        placeholder="Escreva aqui sua dúvida sobre o contrato ou anexe dados acima..."
-                                        rows={1}
-                                        className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-20 text-sm text-gray-800 bg-gray-50 focus:ring-2 focus:ring-pifc-primary focus:border-pifc-primary placeholder:text-gray-400 transition-colors"
-                                        style={{ minHeight: "48px", maxHeight: "120px" }}
-                                    />
-                                    <div className="absolute right-3 bottom-3 flex items-center gap-1">
+                    {/* Chat Input - Fixed at bottom with gradient overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-12 pb-6 px-4 sm:px-8 flex flex-col items-center justify-end z-20">
+                        <div className="w-full max-w-3xl">
+                            {/* Chat Input Box - Stitch Design Style */}
+                            <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 ring-1 ring-black/5 group focus-within:ring-2 focus-within:ring-pifc-primary focus-within:border-pifc-primary transition-all duration-300">
+                                <textarea
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    className="w-full bg-transparent border-none text-gray-800 placeholder-gray-400 p-4 resize-none h-14 focus:ring-0 text-base outline-none"
+                                    placeholder="Descreva a tarefa de fiscalização ou cole trechos do contrato..."
+                                    rows={1}
+                                />
+                                <div className="flex items-center justify-between px-3 pb-3 pt-1">
+                                    <div className="flex items-center gap-1">
                                         <button
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="p-1 text-gray-400 hover:text-pifc-primary transition-colors"
-                                            title="Anexar arquivo"
+                                            className="p-2 text-gray-400 hover:text-pifc-primary hover:bg-pifc-primary/10 rounded-lg transition-colors"
+                                            title="Adicionar"
                                         >
-                                            <span className="material-icons-outlined text-xl">attach_file</span>
+                                            <span className="material-icons-outlined text-[20px]">add</span>
                                         </button>
                                         <button
-                                            className="p-1 text-gray-400 hover:text-pifc-primary transition-colors"
+                                            className="p-2 text-gray-400 hover:text-pifc-primary hover:bg-pifc-primary/10 rounded-lg transition-colors flex items-center gap-2 group/btn"
+                                            title="Repositório"
+                                        >
+                                            <span className="material-icons-outlined text-[20px]">deployed_code</span>
+                                            <span className="text-xs font-medium hidden group-hover/btn:inline-block">Repositório</span>
+                                        </button>
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="p-2 text-gray-400 hover:text-pifc-primary hover:bg-pifc-primary/10 rounded-lg transition-colors flex items-center gap-2 group/btn"
+                                            title="Documento"
+                                        >
+                                            <span className="material-icons-outlined text-[20px]">upload_file</span>
+                                            <span className="text-xs font-medium hidden group-hover/btn:inline-block">Documento</span>
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-6 w-px bg-gray-200 mx-1"></div>
+                                        <button
+                                            className="p-2 text-gray-400 hover:text-pifc-primary hover:bg-pifc-primary/10 rounded-full transition-colors"
                                             title="Gravar áudio"
                                         >
-                                            <span className="material-icons-outlined text-xl">mic</span>
+                                            <span className="material-icons-outlined text-[20px]">mic</span>
+                                        </button>
+                                        <button
+                                            onClick={handleSendMessage}
+                                            disabled={!message.trim()}
+                                            className="w-8 h-8 flex items-center justify-center bg-pifc-primary hover:bg-pifc-primary-dark text-white rounded-lg shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            <span className="material-icons-outlined text-[18px]">arrow_upward</span>
                                         </button>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={handleSendMessage}
-                                    disabled={!message.trim()}
-                                    className="p-3 bg-pifc-primary hover:bg-pifc-primary-dark text-white rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
-                                >
-                                    <span className="material-icons-outlined text-xl">send</span>
-                                </button>
                             </div>
-                            <p className="text-center text-xs text-gray-400 mt-2">
-                                <span className="text-pifc-primary">O PIFC pode cometer erros.</span> Verifique
-                                informações importantes com o setor jurídico.
-                            </p>
+
+                            {/* Suggestion Chips */}
+                            <div className="flex flex-wrap justify-center gap-2 mt-4">
+                                {chatSuggestions.map((s) => (
+                                    <button
+                                        key={s.label}
+                                        onClick={() => handleSuggestionClick(s.label)}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-500 hover:border-pifc-primary hover:text-pifc-primary transition-colors shadow-sm"
+                                    >
+                                        <span className="material-icons-outlined text-[16px]">{s.icon}</span>
+                                        {s.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Disclaimer */}
+                            <div className="mt-4 text-center">
+                                <p className="text-[10px] text-gray-400 opacity-70">
+                                    O agente pode cometer erros. Verifique informações importantes. Baseado no modelo PIFC-v2.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </main>
