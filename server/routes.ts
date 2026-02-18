@@ -6,11 +6,21 @@ import { z } from "zod";
 import multer from "multer";
 import OpenAI from "openai";
 
-// Configure OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// Configure OpenAI lazily to avoid crash when API key is not set
+let openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OpenAI API key not configured. Set AI_INTEGRATIONS_OPENAI_API_KEY or OPENAI_API_KEY.");
+    }
+    openai = new OpenAI({
+      apiKey,
+      ...(process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && { baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL }),
+    });
+  }
+  return openai;
+}
 
 // Configure Multer for memory storage
 const upload = multer({
@@ -62,7 +72,7 @@ export async function registerRoutes(
         if (!req.file) {
           return res.status(400).json({ message: "No file uploaded" });
         }
-        
+
         const contractId = Number(req.params.id);
         const fileType = req.body.fileType as "contract" | "requirements" | "code";
 
@@ -102,7 +112,7 @@ export async function registerRoutes(
 
     try {
       // Call OpenAI to simulate analysis
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAI().chat.completions.create({
         model: "gpt-5.1",
         messages: [
           {
@@ -141,7 +151,7 @@ export async function registerRoutes(
       });
 
       await storage.updateContractStatus(contractId, "completed");
-      
+
       res.json({ message: "Analysis completed", analysisId: analysis.id });
     } catch (err) {
       console.error("AI Analysis failed:", err);
@@ -171,7 +181,7 @@ async function seedDatabase() {
       description: "Desenvolvimento do módulo de solicitação e aprovação de férias integrado ao ERP do estado.",
       status: "draft",
     });
-    
+
     await storage.createContract({
       title: "Portal do Cidadão - Refatoração",
       supplierName: "InovaGov Soluções",

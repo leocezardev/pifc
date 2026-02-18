@@ -1,15 +1,10 @@
-import { db } from "./db";
 import {
-  contracts,
-  contractFiles,
-  analyses,
   type InsertContract,
   type InsertContractFile,
   type Contract,
   type ContractFile,
   type Analysis,
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Contracts
@@ -28,52 +23,104 @@ export interface IStorage {
   getAnalysis(id: number): Promise<Analysis | undefined>;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemoryStorage implements IStorage {
+  private contracts: Contract[] = [];
+  private contractFiles: ContractFile[] = [];
+  private analyses: Analysis[] = [];
+  private nextContractId = 1;
+  private nextFileId = 1;
+  private nextAnalysisId = 1;
+
   async getContracts(): Promise<Contract[]> {
-    return await db.select().from(contracts).orderBy(desc(contracts.createdAt));
+    return [...this.contracts].sort(
+      (a, b) =>
+        (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)
+    );
   }
 
   async getContract(id: number): Promise<Contract | undefined> {
-    const [contract] = await db.select().from(contracts).where(eq(contracts.id, id));
-    return contract;
+    return this.contracts.find((c) => c.id === id);
   }
 
-  async createContract(insertContract: InsertContract): Promise<Contract> {
-    const [contract] = await db.insert(contracts).values(insertContract).returning();
+  async createContract(input: InsertContract): Promise<Contract> {
+    const contract: Contract = {
+      id: this.nextContractId++,
+      title: input.title,
+      supplierName: input.supplierName,
+      contractDate: input.contractDate instanceof Date ? input.contractDate : new Date(input.contractDate),
+      value: input.value,
+      description: input.description ?? null,
+      status: "draft",
+      createdAt: new Date(),
+    };
+    this.contracts.push(contract);
     return contract;
   }
 
   async updateContractStatus(id: number, status: string): Promise<Contract> {
-    const [contract] = await db
-      .update(contracts)
-      .set({ status })
-      .where(eq(contracts.id, id))
-      .returning();
+    const contract = this.contracts.find((c) => c.id === id);
+    if (!contract) throw new Error("Contract not found");
+    (contract as any).status = status;
     return contract;
   }
 
   async createContractFile(file: InsertContractFile): Promise<ContractFile> {
-    const [contractFile] = await db.insert(contractFiles).values(file).returning();
+    const contractFile: ContractFile = {
+      id: this.nextFileId++,
+      contractId: file.contractId,
+      filename: file.filename,
+      fileType: file.fileType,
+      fileSize: file.fileSize,
+      content: file.content ?? null,
+      createdAt: new Date(),
+    };
+    this.contractFiles.push(contractFile);
     return contractFile;
   }
 
   async getContractFiles(contractId: number): Promise<ContractFile[]> {
-    return await db.select().from(contractFiles).where(eq(contractFiles.contractId, contractId));
+    return this.contractFiles.filter((f) => f.contractId === contractId);
   }
 
   async createAnalysis(analysis: any): Promise<Analysis> {
-    const [newAnalysis] = await db.insert(analyses).values(analysis).returning();
+    const newAnalysis: Analysis = {
+      id: this.nextAnalysisId++,
+      contractId: analysis.contractId,
+      totalPoints: analysis.totalPoints,
+      deliveredPoints: analysis.deliveredPoints,
+      summary: analysis.summary,
+      rawJson: analysis.rawJson,
+      createdAt: new Date(),
+    };
+    this.analyses.push(newAnalysis);
     return newAnalysis;
   }
 
   async getAnalyses(contractId: number): Promise<Analysis[]> {
-    return await db.select().from(analyses).where(eq(analyses.contractId, contractId)).orderBy(desc(analyses.createdAt));
+    return this.analyses
+      .filter((a) => a.contractId === contractId)
+      .sort(
+        (a, b) =>
+          (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)
+      );
   }
 
   async getAnalysis(id: number): Promise<Analysis | undefined> {
-    const [analysis] = await db.select().from(analyses).where(eq(analyses.id, id));
-    return analysis;
+    return this.analyses.find((a) => a.id === id);
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use database storage if DATABASE_URL is set, otherwise use memory storage
+let storage: IStorage;
+
+if (process.env.DATABASE_URL) {
+  // Dynamic import to avoid crash when DATABASE_URL is not set
+  const { DatabaseStorage } = await import("./database-storage.js");
+  storage = new DatabaseStorage();
+  console.log("[storage] Using PostgreSQL database storage");
+} else {
+  storage = new MemoryStorage();
+  console.log("[storage] Using in-memory storage (no DATABASE_URL set)");
+}
+
+export { storage };
