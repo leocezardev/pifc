@@ -6,7 +6,6 @@ export function Sidebar() {
 
   const mainNavItems = [
     { icon: "dashboard", label: "Dashboard", href: "/" },
-    { icon: "chat_bubble", label: "Nova Fiscalização", href: "/nova-fiscalizacao" },
     { icon: "assignment", label: "Contratos", href: "/contratos" },
     { icon: "cloud_upload", label: "Ingestão", href: "/contracts" },
     { icon: "analytics", label: "Análise", href: "/analysis" },
@@ -24,6 +23,18 @@ export function Sidebar() {
     >
 
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+        {/* Nova Fiscalização CTA Button */}
+        <div className="px-2 mb-5">
+          <Link href="/nova-fiscalizacao">
+            <a
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-pifc-primary hover:bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.98]"
+            >
+              <span className="material-icons-outlined text-[20px]">add</span>
+              Nova Fiscalização
+            </a>
+          </Link>
+        </div>
+
         <div className="mb-2 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
           Principal
         </div>
