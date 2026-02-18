@@ -7,6 +7,23 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import ContractsList from "@/pages/ContractsList";
 import ContractDetail from "@/pages/ContractDetail";
+import { DashboardLayout } from "@/components/DashboardLayout";
+
+function SettingsPage() {
+  return (
+    <DashboardLayout>
+      <div className="animate-enter">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Configurações</h2>
+        <p className="text-sm text-gray-600">Página de configurações em desenvolvimento.</p>
+        <div className="mt-8 bg-white rounded-xl p-12 shadow-sm border border-gray-200 text-center">
+          <span className="material-icons-outlined text-6xl text-gray-300 mb-4 block">settings</span>
+          <h3 className="text-lg font-bold text-gray-700 mb-1">Em Breve</h3>
+          <p className="text-gray-500 text-sm">As configurações do sistema estão sendo desenvolvidas.</p>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
 
 function Router() {
   return (
@@ -14,7 +31,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/contracts" component={ContractsList} />
       <Route path="/contracts/:id" component={ContractDetail} />
-      <Route path="/settings" component={() => <div className="p-8 md:ml-64">Settings Page (Coming Soon)</div>} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,13 +1,11 @@
-import { Sidebar } from "@/components/Sidebar";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { useContract, useRunAnalysis, useAnalysis } from "@/hooks/use-contracts";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FileUpload } from "@/components/FileUpload";
 import { AnalysisReport } from "@/components/AnalysisReport";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { ArrowLeft, Play, AlertCircle, Loader2 } from "lucide-react";
 import { Link, useRoute } from "wouter";
 
 export default function ContractDetail() {
@@ -15,168 +13,184 @@ export default function ContractDetail() {
   const id = parseInt(params?.id || "0");
   const { data: contract, isLoading, error } = useContract(id);
   const runAnalysis = useRunAnalysis();
-  
-  // Try to fetch analysis if status is completed
+
   const { data: analysis } = useAnalysis(contract?.analyses?.[0]?.id);
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  if (error || !contract) return <div className="flex h-screen items-center justify-center">Contract not found</div>;
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-24">
+          <div className="w-8 h-8 border-4 border-pifc-primary/20 border-t-pifc-primary rounded-full animate-spin"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const hasContractFile = contract.files?.some(f => f.fileType === "contract");
-  const hasRequirementsFile = contract.files?.some(f => f.fileType === "requirements");
-  const hasCodeFile = contract.files?.some(f => f.fileType === "code");
+  if (error || !contract) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-24 text-gray-500">
+          <span className="material-icons-outlined text-4xl mr-3">error_outline</span>
+          Contrato não encontrado.
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const hasContractFile = contract.files?.some((f) => f.fileType === "contract");
+  const hasRequirementsFile = contract.files?.some((f) => f.fileType === "requirements");
+  const hasCodeFile = contract.files?.some((f) => f.fileType === "code");
   const allFilesUploaded = hasContractFile && hasRequirementsFile && hasCodeFile;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans">
-      <Sidebar />
-      <main className="flex-1 md:ml-64 p-8 space-y-8">
-        {/* Header */}
-        <div className="space-y-4 animate-enter">
-          <Link href="/contracts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Contracts
-          </Link>
-          
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight">{contract.title}</h1>
-                <StatusBadge status={contract.status as any} className="text-sm px-3 py-1" />
-              </div>
-              <p className="text-muted-foreground mt-1">
-                {contract.supplierName} • {format(new Date(contract.contractDate), "MMMM d, yyyy")}
-              </p>
+    <DashboardLayout>
+      {/* Header */}
+      <div className="space-y-4 animate-enter">
+        <Link
+          href="/contracts"
+          className="inline-flex items-center text-sm text-gray-500 hover:text-pifc-primary transition-colors"
+        >
+          <span className="material-icons-outlined text-sm mr-1">arrow_back</span>
+          Voltar para Contratos
+        </Link>
+
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-2xl font-bold text-gray-800">{contract.title}</h2>
+              <StatusBadge status={contract.status as any} className="text-sm px-3 py-1" />
             </div>
-            
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold font-mono text-primary">R$ {Number(contract.value).toLocaleString()}</p>
-            </div>
+            <p className="text-sm text-gray-600 mt-1">
+              {contract.supplierName} • {format(new Date(contract.contractDate), "dd MMMM yyyy")}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">Valor Total</p>
+            <p className="text-2xl font-bold font-mono text-pifc-primary">
+              R$ {Number(contract.value).toLocaleString()}
+            </p>
           </div>
         </div>
+      </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
-            <TabsTrigger value="files" className="rounded-lg">Files & Documents</TabsTrigger>
-            <TabsTrigger value="analysis" className="rounded-lg">Analysis Report</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="overview" className="space-y-6 mt-8">
+        <TabsList className="bg-gray-100 p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg">
+            Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="files" className="rounded-lg">
+            Arquivos
+          </TabsTrigger>
+          <TabsTrigger value="analysis" className="rounded-lg">
+            Relatório de Análise
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="overview" className="animate-enter">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
-                  {contract.description || "No description provided."}
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        <TabsContent value="overview" className="animate-enter">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Descrição</h3>
+            <p className="text-gray-600 leading-relaxed">
+              {contract.description || "Nenhuma descrição fornecida."}
+            </p>
+          </div>
+        </TabsContent>
 
-          <TabsContent value="files" className="animate-enter">
-            <div className="grid md:grid-cols-3 gap-6">
-              <FileUpload 
-                contractId={contract.id} 
-                fileType="contract" 
-                label="Contract PDF" 
-                accept=".pdf"
-                isUploaded={hasContractFile} 
-              />
-              <FileUpload 
-                contractId={contract.id} 
-                fileType="requirements" 
-                label="Requirements Doc" 
-                accept=".pdf,.doc,.docx"
-                isUploaded={hasRequirementsFile} 
-              />
-              <FileUpload 
-                contractId={contract.id} 
-                fileType="code" 
-                label="Source Code" 
-                accept=".zip,.rar,.tar.gz"
-                isUploaded={hasCodeFile} 
-              />
-            </div>
-            
-            {contract.files && contract.files.length > 0 && (
-              <Card className="mt-8 shadow-sm">
-                <CardHeader><CardTitle>Uploaded Files History</CardTitle></CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {contract.files.map(file => (
-                      <li key={file.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg text-sm">
-                        <span className="font-medium text-foreground">{file.filename}</span>
-                        <span className="text-muted-foreground uppercase text-xs tracking-wider">{file.fileType}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+        <TabsContent value="files" className="animate-enter">
+          <div className="grid md:grid-cols-3 gap-6">
+            <FileUpload
+              contractId={contract.id}
+              fileType="contract"
+              label="Contrato PDF"
+              accept=".pdf"
+              isUploaded={hasContractFile}
+            />
+            <FileUpload
+              contractId={contract.id}
+              fileType="requirements"
+              label="Documento de Requisitos"
+              accept=".pdf,.doc,.docx"
+              isUploaded={hasRequirementsFile}
+            />
+            <FileUpload
+              contractId={contract.id}
+              fileType="code"
+              label="Código-fonte"
+              accept=".zip,.rar,.tar.gz"
+              isUploaded={hasCodeFile}
+            />
+          </div>
 
-          <TabsContent value="analysis" className="animate-enter">
-            {contract.status === 'draft' && (
-              <Card className="border-dashed border-2 shadow-none bg-muted/10">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Play className="w-8 h-8 text-primary ml-1" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Ready to Analyze?</h3>
-                  <p className="text-muted-foreground max-w-md mb-6">
-                    Ensure all required documents (Contract, Requirements, and Source Code) are uploaded before starting the AI analysis.
-                  </p>
-                  <Button 
-                    size="lg" 
-                    disabled={!allFilesUploaded || runAnalysis.isPending}
-                    onClick={() => runAnalysis.mutate(contract.id)}
-                    className="shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+          {contract.files && contract.files.length > 0 && (
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mt-8">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Histórico de Uploads</h3>
+              <ul className="space-y-2">
+                {contract.files.map((file) => (
+                  <li
+                    key={file.id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg text-sm"
                   >
-                    {runAnalysis.isPending ? "Starting..." : "Start AI Analysis"}
-                  </Button>
-                  {!allFilesUploaded && (
-                    <p className="mt-4 text-sm text-destructive flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      Missing required files. Please upload them in the Files tab.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    <span className="font-medium text-gray-700">{file.filename}</span>
+                    <span className="text-gray-500 uppercase text-xs tracking-wider">
+                      {file.fileType}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </TabsContent>
 
-            {contract.status === 'analyzing' && (
-              <Card className="border-none shadow-lg bg-white/50 backdrop-blur">
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <div className="relative">
-                    <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 text-primary animate-pulse" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold mt-6 mb-2">Analyzing Contract...</h3>
-                  <p className="text-muted-foreground text-center max-w-md">
-                    Our AI is reviewing the contract terms, requirements, and codebase to verify function points. This may take a few minutes.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {contract.status === 'completed' && analysis && (
-              <AnalysisReport analysis={analysis} />
-            )}
-            
-            {contract.status === 'failed' && (
-              <div className="p-8 border border-destructive/20 bg-destructive/5 rounded-xl text-center">
-                <h3 className="text-lg font-bold text-destructive mb-2">Analysis Failed</h3>
-                <p className="text-muted-foreground">Something went wrong during the analysis process. Please try again or check the files.</p>
+        <TabsContent value="analysis" className="animate-enter">
+          {contract.status === "draft" && (
+            <div className="bg-white rounded-xl border-dashed border-2 border-gray-300 p-12 text-center">
+              <div className="w-16 h-16 bg-pifc-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <span className="material-icons-outlined text-pifc-primary text-3xl">play_arrow</span>
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+              <h3 className="text-xl font-bold mb-2 text-gray-800">Pronto para Analisar?</h3>
+              <p className="text-gray-600 max-w-md mb-6 mx-auto">
+                Certifique-se de que todos os documentos necessários (Contrato, Requisitos e Código-fonte) foram enviados antes de iniciar a análise por IA.
+              </p>
+              <Button
+                size="lg"
+                disabled={!allFilesUploaded || runAnalysis.isPending}
+                onClick={() => runAnalysis.mutate(contract.id)}
+                className="bg-pifc-primary hover:bg-pifc-primary-dark shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                {runAnalysis.isPending ? "Iniciando..." : "Iniciar Análise IA"}
+              </Button>
+              {!allFilesUploaded && (
+                <p className="mt-4 text-sm text-ds-error flex items-center gap-2 justify-center">
+                  <span className="material-icons-outlined text-base">error</span>
+                  Arquivos obrigatórios ausentes. Faça upload na aba Arquivos.
+                </p>
+              )}
+            </div>
+          )}
+
+          {contract.status === "analyzing" && (
+            <div className="bg-white rounded-xl p-16 text-center shadow-sm border border-gray-200">
+              <div className="relative inline-block">
+                <div className="w-16 h-16 border-4 border-pifc-primary/20 border-t-pifc-primary rounded-full animate-spin"></div>
+              </div>
+              <h3 className="text-xl font-bold mt-6 mb-2 text-gray-800">Analisando Contrato...</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Nossa IA está revisando os termos do contrato, requisitos e código-fonte. Isso pode levar alguns minutos.
+              </p>
+            </div>
+          )}
+
+          {contract.status === "completed" && analysis && <AnalysisReport analysis={analysis} />}
+
+          {contract.status === "failed" && (
+            <div className="p-8 border border-ds-error/20 bg-red-50 rounded-xl text-center">
+              <h3 className="text-lg font-bold text-ds-error mb-2">Análise Falhou</h3>
+              <p className="text-gray-600">
+                Algo deu errado durante o processo de análise. Por favor, tente novamente ou verifique os arquivos.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </DashboardLayout>
   );
 }
