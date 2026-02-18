@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Link } from "wouter";
+import { Link, useRoute } from "wouter";
 
 // ────── Health Score Ring ──────
 function HealthScoreRing({ score }: { score: number }) {
@@ -276,6 +276,9 @@ const verifications = [
 
 // ────── Main Page Component ──────
 export default function PainelContrato() {
+    const [, params] = useRoute("/painel-contrato/:id");
+    const contractId = params?.id || "mock-1";
+
     return (
         <DashboardLayout>
             <AIChatBubble />
@@ -294,7 +297,11 @@ export default function PainelContrato() {
                             </li>
                             <li className="flex items-center">
                                 <span className="material-icons text-gray-300 text-sm">chevron_right</span>
-                                <span className="ml-2 text-sm font-medium text-gray-500">Contratos Ativos</span>
+                                <Link href="/contratos">
+                                    <a className="ml-2 text-sm font-medium text-gray-500 hover:text-pifc-primary transition-colors">
+                                        Contratos Ativos
+                                    </a>
+                                </Link>
                             </li>
                             <li className="flex items-center">
                                 <span className="material-icons text-gray-300 text-sm">chevron_right</span>
