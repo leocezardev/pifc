@@ -36,6 +36,27 @@ export const analyses = pgTable("analyses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const chatSessions = pgTable("chat_sessions", {
+  id: serial("id").primaryKey(),
+  sessionType: text("session_type", { enum: ["chat", "repo", "upload"] }).notNull(),
+  title: text("title").default("Nova Análise"),
+  repoUrl: text("repo_url"),
+  contractId: integer("contract_id"),
+  status: text("status", { enum: ["active", "analyzing", "completed", "failed"] }).default("active").notNull(),
+  score: integer("score"),
+  scoreReport: jsonb("score_report"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull(),
+  role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
+  content: text("content").notNull(),
+  steps: jsonb("steps"), // Array of processing steps: { label, detail, status, time }
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // === RELATIONS ===
 
 export const contractsRelations = relations(contracts, ({ many }) => ({
@@ -57,10 +78,23 @@ export const analysesRelations = relations(analyses, ({ one }) => ({
   }),
 }));
 
+export const chatSessionsRelations = relations(chatSessions, ({ many }) => ({
+  messages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  session: one(chatSessions, {
+    fields: [chatMessages.sessionId],
+    references: [chatSessions.id],
+  }),
+}));
+
 // === BASE SCHEMAS ===
 
 export const insertContractSchema = createInsertSchema(contracts).omit({ id: true, createdAt: true, status: true });
 export const insertContractFileSchema = createInsertSchema(contractFiles).omit({ id: true, createdAt: true });
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({ id: true, createdAt: true, status: true, score: true, scoreReport: true });
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -69,6 +103,10 @@ export type InsertContract = z.infer<typeof insertContractSchema>;
 export type ContractFile = typeof contractFiles.$inferSelect;
 export type InsertContractFile = z.infer<typeof insertContractFileSchema>;
 export type Analysis = typeof analyses.$inferSelect;
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 
 // Request Types
 export type CreateContractRequest = InsertContract;
@@ -89,4 +127,15 @@ export type FileUploadResponse = {
   id: number;
   filename: string;
   fileType: string;
+};
+
+export type ChatSessionResponse = ChatSession & {
+  messages?: ChatMessage[];
+};
+
+export type ProcessingStep = {
+  label: string;
+  detail: string;
+  status: "done" | "loading" | "pending";
+  time?: string;
 };
