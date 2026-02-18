@@ -210,47 +210,67 @@ function AIChatBubble() {
     );
 }
 
-// ────── Activity data ──────
-const activities = [
+// ────── Conformity Verification data ──────
+const verifications = [
     {
-        icon: "upload_file",
+        icon: "inventory_2",
         iconBg: "bg-blue-50",
         iconColor: "text-pifc-primary",
-        title: "Upload de Nota Técnica 04/23",
-        responsible: "Maria Souza (Fiscal)",
-        status: "Concluído",
-        statusStyle: "bg-green-100 text-green-800",
-        date: "Hoje, 14:30",
+        title: "Entrega #402",
+        subtitle: "Módulo Pagamentos",
+        status: "Aprovado",
+        statusStyle: "bg-green-100 text-green-700",
+        score: 95,
+        scoreColor: "bg-ds-success",
+        date: "Há 2 horas",
     },
     {
-        icon: "warning_amber",
+        icon: "description",
         iconBg: "bg-amber-50",
         iconColor: "text-amber-600",
-        title: "Alerta de Atraso: Entrega Sprint 15",
-        responsible: "Sistema (Automático)",
-        status: "Pendente",
-        statusStyle: "bg-amber-100 text-amber-800",
-        date: "Ontem, 09:15",
+        title: "Relatório Q3",
+        subtitle: "Req. Não Funcionais",
+        status: "Atenção",
+        statusStyle: "bg-amber-100 text-amber-700",
+        score: 74,
+        scoreColor: "bg-ds-warning",
+        date: "Ontem",
     },
     {
-        icon: "verified",
-        iconBg: "bg-green-50",
-        iconColor: "text-ds-success",
-        title: "Aprovação de Medição #12",
-        responsible: "João Silva (Gestor)",
-        status: "Concluído",
-        statusStyle: "bg-green-100 text-green-800",
-        date: "12/10, 16:45",
+        icon: "security",
+        iconBg: "bg-red-50",
+        iconColor: "text-ds-error",
+        title: "API Gateway",
+        subtitle: "Segurança OWASP",
+        status: "Crítico",
+        statusStyle: "bg-red-100 text-red-700",
+        score: 45,
+        scoreColor: "bg-ds-error",
+        date: "3 dias atrás",
     },
     {
         icon: "code",
         iconBg: "bg-indigo-50",
         iconColor: "text-indigo-600",
-        title: "Análise de Código - Sprint 14",
-        responsible: "PIFC (Automático)",
-        status: "Em análise",
-        statusStyle: "bg-blue-100 text-blue-800",
-        date: "11/10, 10:00",
+        title: "Sprint 14",
+        subtitle: "Análise Estática",
+        status: "Aprovado",
+        statusStyle: "bg-green-100 text-green-700",
+        score: 88,
+        scoreColor: "bg-ds-success",
+        date: "5 dias atrás",
+    },
+    {
+        icon: "verified",
+        iconBg: "bg-green-50",
+        iconColor: "text-ds-success",
+        title: "Medição #12",
+        subtitle: "Conformidade SLA",
+        status: "Aprovado",
+        statusStyle: "bg-green-100 text-green-700",
+        score: 99,
+        scoreColor: "bg-ds-success",
+        date: "1 semana atrás",
     },
 ];
 
@@ -452,45 +472,65 @@ export default function PainelContrato() {
                 />
             </div>
 
-            {/* ═══════════════ Recent Activity Table ═══════════════ */}
+            {/* ═══════════════ Últimas Verificações de Conformidade ═══════════════ */}
             <div
                 className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-enter"
                 style={{ animationDelay: "200ms" }}
             >
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-gray-900">Atividades Recentes</h3>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <span className="material-icons-outlined text-pifc-primary">fact_check</span>
+                        Últimas Verificações de Conformidade
+                    </h3>
                     <button className="text-sm text-pifc-primary hover:text-pifc-primary-dark font-medium">
                         Ver todas
                     </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead className="uppercase tracking-wider border-b border-gray-200 text-gray-500">
+                        <thead className="uppercase tracking-wider border-b border-gray-200 text-gray-400 text-xs">
                             <tr>
-                                <th className="px-4 py-3 font-semibold">Evento</th>
-                                <th className="px-4 py-3 font-semibold">Responsável</th>
+                                <th className="px-4 py-3 font-semibold">Entrega</th>
                                 <th className="px-4 py-3 font-semibold">Status</th>
-                                <th className="px-4 py-3 font-semibold text-right">Data</th>
+                                <th className="px-4 py-3 font-semibold">Score</th>
+                                <th className="px-4 py-3 font-semibold">Data</th>
+                                <th className="px-4 py-3 font-semibold"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {activities.map((act, i) => (
-                                <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-3 text-gray-700">
+                            {verifications.map((v, i) => (
+                                <tr key={i} className="hover:bg-gray-50 transition-colors cursor-pointer group">
+                                    <td className="px-4 py-4 text-gray-700">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded ${act.iconBg} flex items-center justify-center ${act.iconColor}`}>
-                                                <span className="material-icons text-sm">{act.icon}</span>
+                                            <div className={`w-9 h-9 rounded-lg ${v.iconBg} flex items-center justify-center ${v.iconColor}`}>
+                                                <span className="material-icons text-base">{v.icon}</span>
                                             </div>
-                                            <span className="font-medium">{act.title}</span>
+                                            <div>
+                                                <span className="font-semibold text-gray-800 block">{v.title}</span>
+                                                <span className="text-xs text-gray-400">{v.subtitle}</span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-gray-600">{act.responsible}</td>
-                                    <td className="px-4 py-3">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${act.statusStyle}`}>
-                                            {act.status}
+                                    <td className="px-4 py-4">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${v.statusStyle}`}>
+                                            {v.status}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 text-right text-gray-500">{act.date}</td>
+                                    <td className="px-4 py-4">
+                                        <div className="flex items-center gap-3 min-w-[140px]">
+                                            <div className="flex-1 bg-gray-100 rounded-full h-2 max-w-[80px]">
+                                                <div
+                                                    className={`h-2 rounded-full transition-all duration-700 ${v.scoreColor}`}
+                                                    style={{ width: `${v.score}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-700 w-10 text-right">{v.score}%</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-gray-500">{v.date}</td>
+                                    <td className="px-4 py-4">
+                                        <span className="material-icons-outlined text-gray-300 group-hover:text-pifc-primary transition-colors text-lg">chevron_right</span>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

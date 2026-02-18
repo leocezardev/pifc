@@ -36,7 +36,6 @@ function Router() {
       <Route path="/contracts/:id" component={ContractDetail} />
       <Route path="/nova-fiscalizacao" component={NovaFiscalizacao} />
       <Route path="/contratos" component={ContratosLista} />
-      <Route path="/painel-contrato/:id" component={PainelContrato} />
       <Route path="/painel-contrato" component={PainelContrato} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
