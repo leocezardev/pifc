@@ -106,9 +106,7 @@ export default function NovaFiscalizacao() {
                         </span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative">
-                            <span className="material-icons-outlined">notifications</span>
-                        </button>
+
                         <div className="flex items-center gap-1 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-sm font-medium shadow-sm">
                             <span className="material-icons-outlined text-yellow-500 text-sm">bolt</span>
                             <span className="text-gray-800">300 créditos</span>

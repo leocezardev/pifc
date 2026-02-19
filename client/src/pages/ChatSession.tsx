@@ -149,15 +149,11 @@ export default function ChatSession() {
                 {/* Logo */}
                 <div className="p-5 border-b border-gray-100">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-8 h-8 bg-pifc-primary rounded-lg flex items-center justify-center shadow-sm">
-                            <span className="text-white font-bold text-sm">P</span>
-                        </div>
-                        <div>
-                            <h1 className="font-bold text-gray-800 text-sm leading-tight group-hover:text-pifc-primary transition-colors">
-                                PIFC Platform
-                            </h1>
-                            <p className="text-[10px] text-gray-400 leading-tight">Fiscalização Inteligente</p>
-                        </div>
+                        <img
+                            src="/image.png"
+                            alt="PIFC - Plataforma de Inteligência de Fiscalização Contratual"
+                            className="h-10 w-auto object-contain transition-opacity group-hover:opacity-80"
+                        />
                     </Link>
                 </div>
 
@@ -260,16 +256,6 @@ export default function ChatSession() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {!isCompleted && localMessages.length >= 2 && (
-                            <button
-                                onClick={handleGenerateScore}
-                                disabled={generateScore.isPending || isThinking}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-all shadow-sm hover:shadow"
-                            >
-                                <span className="material-symbols-outlined text-[16px]">analytics</span>
-                                Gerar Score
-                            </button>
-                        )}
                     </div>
                 </header>
 
@@ -318,6 +304,20 @@ export default function ChatSession() {
                                 </div>
                             </div>
                         ) : null}
+
+                        {/* Generate Score CTA - Moved inside chat */}
+                        {!isCompleted && localMessages.length >= 2 && !isThinking && (
+                            <div className="flex justify-center my-10 animate-enter" style={{ animationDelay: "300ms" }}>
+                                <button
+                                    onClick={handleGenerateScore}
+                                    disabled={generateScore.isPending}
+                                    className="flex items-center gap-2.5 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:scale-95 group font-medium"
+                                >
+                                    <span className="material-symbols-outlined text-[22px] group-hover:rotate-12 transition-transform">analytics</span>
+                                    Gerar Score
+                                </button>
+                            </div>
+                        )}
 
                         {/* Score Report Card */}
                         {isCompleted && !!session?.scoreReport && (
